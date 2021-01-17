@@ -22,7 +22,7 @@ class VisDroneDataset(torch.utils.data.Dataset):
             try:
                 for annotation in file:
                     annotation = list(map(int, annotation.rstrip("\n").split(',')))
-                    if annotation[2] == 0 or annotations[3] == 0:
+                    if annotation[2] == 0 or annotation[3] == 0:
                         print(annotations_path)
                         exit(-1)
                     boxes.append([annotation[0], annotation[1],
