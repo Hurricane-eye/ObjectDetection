@@ -143,3 +143,6 @@ VisDrone2019-DET-val/
 
 #Pycharm
 .idea/
+
+# PyTorch .pt file
+*.pt

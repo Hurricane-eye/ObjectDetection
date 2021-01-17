@@ -22,10 +22,16 @@ class VisDroneDataset(torch.utils.data.Dataset):
             try:
                 for annotation in file:
                     annotation = list(map(int, annotation.rstrip("\n").split(',')))
+                    if annotation[2] == 0 or annotations[3] == 0:
+                        print(annotations_path)
+                        exit(-1)
                     boxes.append([annotation[0], annotation[1],
                                   annotation[0] + annotation[2],
                                   annotation[1] + annotation[3]])
                     labels.append(annotation[5])
+            except ValueError:
+                print(annotations_path)
+                exit(-1)
             finally:
                 file.close()
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
