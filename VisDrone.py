@@ -22,21 +22,20 @@ class VisDroneDataset(torch.utils.data.Dataset):
             try:
                 for annotation in file:
                     annotation = list(map(int, annotation.rstrip("\n").split(',')))
-                    if annotation[2] == 0 or annotation[3] == 0:
-                        print(annotations_path)
-                        exit(-1)
                     boxes.append([annotation[0], annotation[1],
                                   annotation[0] + annotation[2],
                                   annotation[1] + annotation[3]])
                     labels.append(annotation[5])
-            except ValueError:
-                print(annotations_path)
-                exit(-1)
+
             finally:
                 file.close()
         boxes = torch.as_tensor(boxes, dtype=torch.float32)
         labels = torch.as_tensor(labels, dtype=torch.int64)
-        target = {"boxes": boxes, "labels": labels}
+        area =(boxes[:, 3] - boxes[:, 1]) * (boxes[:, 2] - boxes[:, 0])
+        image_id = torch.tensor([idx])
+        iscrowd = torch.zeros((len(labels), ), dtype=torch.int64)
+        target = {"boxes": boxes, "labels": labels, "image_id": image_id,
+                  "area": area, "iscrowd": iscrowd}
 
         if self.transforms is not None:
             img = self.transforms(img)
