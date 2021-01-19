@@ -5,6 +5,10 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 
 
+CLASS_NAMES = ["ignored_regions", "pedestrian", "people", "bicycle", "car", "van",
+                   "truck", "tricycle", "awning-tricycle", "bus", "motor", "others"]
+
+
 def drawOneBox(img, bbox, color, label):
     '''对于给定的图像与给定的与类别标注信息，在图片上绘制出bbox并且标注上指定的类别
     '''
@@ -23,17 +27,15 @@ def drawOneBox(img, bbox, color, label):
 
 
 def draw_boxes_in_one_img(root):
-    CLASS_NAMES = ['__background__',  # always index 0
-                   'pedestrian', 'people', 'bicycle', 'car', 'van', 'truck', 'tricycle', 'awning-tricycle', 'bus',
-                   'motor']
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(12)]
-    annotations_path = list(sorted(os.listdir(os.path.join(root, "annotations"))))
-    images_path = list(sorted(os.listdir(os.path.join(root, "images"))))
-    num_images = len(images_path)
+    annotations = list(sorted(os.listdir(os.path.join(root, "annotations"))))
+    images = list(sorted(os.listdir(os.path.join(root, "images"))))
+    num_images = len(images)
     for idx in range(num_images):
-        image_path = images_path[idx]
+        image_path = os.path.join(root, "images", images[idx])
+        annotation_path = os.path.join(root, "annotations", annotations[idx])
         image = cv2.imread(image_path)
-        with open(annotations_path[idx], "r") as file:
+        with open(annotation_path, "r") as file:
             try:
                 for annotation in file:
                     annotation = list(map(int, annotation.rstrip('\n').split(',')))
@@ -41,14 +43,43 @@ def draw_boxes_in_one_img(root):
                                   (annotation[0], annotation[1]),
                                   (annotation[0] + annotation[2], annotation[1] + annotation[3]),
                                   colors[annotation[5]],
-                                  thickness=3)
+                                  thickness=2)
                     cv2.putText(image,
                                 CLASS_NAMES[annotation[5]],
                                 (annotation[0], annotation[1]),
                                 cv2.FONT_HERSHEY_COMPLEX,
+                                0.5,
                                 [255, 255, 255],
                                 thickness=1)
             finally:
                 file.close()
-        cv2.imwrite(os.path.join(root, "images_with_boxes", image_path), image)
+        cv2.imwrite(os.path.join(root, "images_with_boxes", images[idx]), image)
+        print("Successfully write " + images[idx])
+
+
+def draw_boxes_from_prediction(image, prediction, name):
+
+    colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(12)]
+    image = cv2.cvtColor(np.asarray(image.data), cv2.COLOR_RGB2BGR)
+    boxes = prediction["boxes"]
+    labels = prediction["labels"]
+    num_boxes = boxes.size()[0]
+    for i in range(num_boxes):
+        cv2.rectangle(image,
+                      (boxes[i][0], boxes[i][1]),
+                      (boxes[i][0] + boxes[i][2], boxes[i][1] + boxes[i][3]),
+                      colors[labels[i]],
+                      thickness=2)
+        cv2.putText(image,
+                    CLASS_NAMES[labels[i]],
+                    (boxes[i][0], boxes[i][1]),
+                    cv2.FONT_HERSHEY_COMPLEX,
+                    0.5,
+                    [255, 255, 255],
+                    thickness=1)
+    cv2.imwrite(os.path.join("VisDrone2019-DET-test-challenge", "images_with_bboex", name), image)
+
+
+if __name__ == '__main__':
+    draw_boxes_in_one_img("VisDrone2019-DET-test-dev")
 

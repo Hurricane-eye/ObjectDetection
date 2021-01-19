@@ -54,5 +54,25 @@ def get_transform(train):
         transforms.append(T.RandomHorizontalFlip(0.5))
     # transforms.append(T.Resize((600, 800)))
     transforms.append(T.ToTensor())
-    transforms.append(T.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)))
+    # transforms.append(T.Normalize((0.4914, 0.4822, 0.4465), (0.2023, 0.1994, 0.2010)))
     return T.Compose(transforms)
+
+
+class VisDroneTestSet(torch.utils.data.Dataset):
+    def __init__(self, root, transforms=None):
+        self.root = root
+        self.transforms = transforms
+        self.images = list(sorted(os.listdir(os.path.join(root, "images"))))
+
+    def __getitem__(self, idx):
+        img_path = os.path.join(self.root, "images", self.images[idx])
+        img = Image.open(img_path).convert("RGB")
+
+        if self.transforms is not None:
+            img = self.transforms(img)
+
+        return img
+
+    def __len__(self):
+        return len(self.images)
+
