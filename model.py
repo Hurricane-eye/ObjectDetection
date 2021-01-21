@@ -20,7 +20,7 @@ def get_model(pretrained=True):
     backbone = resnet_fpn_backbone("resnet50", pretrained)
     # backbone.out_channels = 256
     # anchor_size =((8,), (16,), (32,), (64,), (128,), (256,), (512,))
-    anchor_size = ((8,), (16,), (32,), (64,), (128,))
+    anchor_size = ((16,), (32,), (64,), (128,), (256,))
     aspect_ratios = ((0.5, 1.0, 2.0),) * len(anchor_size)
     rpn_anchor_generator = AnchorGenerator(anchor_size, aspect_ratios)
     model = FasterRCNN(backbone=backbone,

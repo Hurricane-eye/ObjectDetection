@@ -60,24 +60,28 @@ def draw_boxes_in_one_img(root):
 def draw_boxes_from_prediction(image, prediction, name):
 
     colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(12)]
-    image = cv2.cvtColor(np.asarray(image.data), cv2.COLOR_RGB2BGR)
+    image = cv2.cvtColor(image.numpy().transpose(1, 2, 0) * 255, cv2.COLOR_RGB2BGR)
     boxes = prediction["boxes"]
     labels = prediction["labels"]
     num_boxes = boxes.size()[0]
     for i in range(num_boxes):
+        x1, y1 = int(boxes[i][0].data), int(boxes[i][1].data)
+        x2, y2 = int(boxes[i][2].data), int(boxes[i][3].data)
+        label = int(labels[i].data)
         cv2.rectangle(image,
-                      (boxes[i][0], boxes[i][1]),
-                      (boxes[i][0] + boxes[i][2], boxes[i][1] + boxes[i][3]),
-                      colors[labels[i]],
+                      (x1, y1),
+                      (x2, y2),
+                      colors[label],
                       thickness=2)
         cv2.putText(image,
-                    CLASS_NAMES[labels[i]],
-                    (boxes[i][0], boxes[i][1]),
+                    CLASS_NAMES[label],
+                    (x1, y1),
                     cv2.FONT_HERSHEY_COMPLEX,
                     0.5,
                     [255, 255, 255],
                     thickness=1)
-    cv2.imwrite(os.path.join("VisDrone2019-DET-test-challenge", "images_with_bboex", name), image)
+    cv2.imwrite(os.path.join("VisDrone2019-DET-test-challenge", "images_with_boxes", name), image)
+    print("Successfully write " + name)
 
 
 if __name__ == '__main__':
